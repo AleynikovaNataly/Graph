@@ -1,4 +1,4 @@
-Пробовала на следующем примере
+Example:
 edge e a 1
 edge a b 2
 edge b e 3
