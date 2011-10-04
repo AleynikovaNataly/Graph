@@ -12,8 +12,8 @@ void Graph::EddVertex (Vertex X)
 		bfs.insert (std::make_pair (X, 'w'));
 		DfS dFs;
 		dFs.colour = 'w';
-		//dFs.parent = "NIL";
-		dFs.way_length = 0;
+		dFs.d = 0;
+		dFs.f = 0;
 		dfs.insert (std::make_pair (X, dFs));
 	}
 }
@@ -31,8 +31,8 @@ void Graph::EddEdge (Vertex A, Vertex B, Weight x)
 			bfs.insert (std::make_pair (B, 'w'));
 		DfS dFs;
 		dFs.colour = 'w';
-		//dFs.parent = "NIL";
-		dFs.way_length = 0;
+		dFs.d = 0;
+		dFs.f = 0;
 		dfs.insert (std::make_pair (A, dFs));
 			dfs.insert (std::make_pair (B, dFs));
 	} else 
@@ -41,8 +41,8 @@ void Graph::EddEdge (Vertex A, Vertex B, Weight x)
 			bfs.insert (std::make_pair (B, 'w'));
 			DfS dFs;
 			dFs.colour = 'w';
-			//dFs.parent = "NIL";
-			dFs.way_length = 0;
+			dFs.d = 0;
+			dFs.f = 0;
 			dfs.insert (std::make_pair (B, dFs));
 	}
 	/*if (fnd_2 == graph.end ())
@@ -53,7 +53,8 @@ void Graph::EddEdge (Vertex A, Vertex B, Weight x)
 		bfs.insert (std::make_pair (B, 'w'));
 		DfS dFs;
 		dFs.colour = 'w';
-		dFs.way_length = 0;
+		dFs.d = 0;
+		dFs.f = 0;
 		dfs.insert (std::make_pair (B, dFs));
 	} else
 	{
@@ -206,45 +207,64 @@ void Graph::DfsCallback::print ()
 }
 
 template <typename Cb>
-/*std::vector <Graph>*/ void Graph::DFS (Cb &cb)
+std::vector <std::vector <Vertex> > Graph::DFS (Cb &cb)
 {
-	std::vector <Graph> forest;
-	Graph Tree;
-	for (DColour::iterator it = dfs.begin (); it != dfs.end (); it++)
+	std::vector <std::vector <Vertex> > forest;
+	std::vector <Vertex> tree;
+	if (final.size () == 0)
 	{
-		if ((*it).second.colour == 'w')
+		for (DColour::iterator it = dfs.begin (); it != dfs.end (); it++)
 		{
-			/*Tree = */DFSVisit ((*it).first, cb);
-		} //else {
-			std::cout << std::endl;
-			//forest.push_back (Tree);
-		//}
+			if ((*it).second.colour == 'w')
+			{
+				DFSVisit ((*it).first, cb, tree, forest);
+			} else {
+				if ((*it).second.colour == 'b') 
+				{
+					if (tree.size () != 0)
+					{
+						forest.push_back (tree);
+						tree.clear ();
+					}
+				}
+			}
+		}
+	} else 
+	{
+		for (std::map <int, Vertex>::iterator it = final.begin (); it != final.end (); it++)
+		{
+			DColour::iterator fnd = dfs.find ((*it).second);
+			if ((*fnd).second.colour == 'w')
+			{
+				DFSVisit ((*fnd).first, cb, tree, forest);
+			} else {
+				if ((*fnd).second.colour == 'b') 
+				{
+					if (tree.size () != 0)
+					{
+						forest.push_back (tree);
+						tree.clear ();
+					}
+				}
+			}
+		}
 	}
 	//std::cout << std::endl;
-	//return forest;
+	return forest;
 }
 
 template <typename Cb>
-/*Graph*/ void Graph::DFSVisit (Vertex U, Cb &cb)
+void Graph::DFSVisit (Vertex U, Cb &cb, std::vector <Vertex> &Tree, std::vector <std::vector <Vertex> > &Forest)
 {
-	//Graph Tree;
 	DColour::iterator it = dfs.find (U);
 	DColour::iterator t;
 	My_graph::iterator fnd = graph.find (U);
-	std::cout << (*it).first << "  ";
-	/*if ((*it).second.parent == "NIL")
-	{
-		Tree.EddVertex ((*it).first);
-	} else 
-	{
-		Tree.EddEdge ((*it).second.parent, (*it).first, 0);
-	}*/
+	Tree.push_back ((*it).first);
 	if (fnd != graph.end ())
 	{
 		My_graph::iterator list = GetList ((*fnd).first);
 		(*it).second.colour = 'g';
-		(*it).second.way_length++;
-		//std::cout << (*it).first << "  ";
+		(*it).second.d++;
 		if (list != graph.end ())
 		{
 			for (Adjlist::iterator p = (*list).second.begin (); p != (*list).second.end (); p++)
@@ -253,16 +273,27 @@ template <typename Cb>
 				t = dfs.find (T);
 				if ((*t).second.colour == 'w')
 				{
-					//(*t).second.parent = (*it).first;
-					DFSVisit ((*t).first, cb);
+					DFSVisit ((*t).first, cb, Tree, Forest);
+				} else {
+					if (Tree.size () != 0)
+					{
+						Forest.push_back (Tree);
+						Tree.clear ();
+					}
 				}
 			}
-		}
+		} /*else {
+			if (Tree.size () != 0)
+			{
+				Forest.push_back (Tree);
+				Tree.clear ();
+			}
+		}*/
 	}
 	(*it).second.colour = 'b';
-	(*it).second.way_length++;
+	(*it).second.f++;
+	final.insert (std::make_pair ((*it).second.f, (*it).first));
 	cb.OnBlack ((*it).first);
-	//return Tree;
 }
 
 void Graph::Top_sort (Vertex X)
@@ -286,13 +317,13 @@ Graph Graph::Transp ()
 	return Transp;
 }
 
-/*std::vector <Graph>*/ void Graph::CCK ()
+std::vector <std::vector <Vertex> > Graph::CCK ()
 {
-	//std::vector <Graph> forest;
+	std::vector <std::vector <Vertex> > forest;
 	Graph::DfsCallback cb_g;
 	DFS (cb_g);
 	Graph tr = Transp ();
 	Graph::DfsCallback cb_t;
-	/*forest = */tr.DFS (cb_t);
-	//return forest;
+	forest = tr.DFS (cb_t);
+	return forest;
 }

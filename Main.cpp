@@ -67,12 +67,16 @@ int main ()
 		}*/
 		if (Command == "cck")
 		{
-			//std::vector <Graph> Forest;
-			/*Forest = */New.CCK ();
-			/*for (std::vector <Graph>::iterator it = Forest.begin (); it != Forest.end (); it++)
+			std::vector <std::vector <Vertex> > Forest;
+			Forest = New.CCK ();
+			for (std::vector <std::vector <Vertex> >::iterator it = Forest.begin (); it != Forest.end (); it++)
 			{
-				(*it).Print_Graph ();
-			}*/
+				for (std::vector <Vertex>::iterator p = (*it).begin (); p != (*it).end (); p++)
+				{
+					std::cout << (*p) << "  ";
+				}
+				std::cout << std::endl;
+			}
 		}
 		if (Command == "exit")
 		{

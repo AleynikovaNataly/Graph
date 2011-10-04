@@ -7,8 +7,8 @@
 struct DfS
 {
 	char colour;
-	std::string parent;
-	int way_length;
+	int d;
+	int f;
 };
 
 typedef std::string Vertex;
@@ -24,6 +24,7 @@ private:
     My_graph graph;
 	BColour bfs;
 	DColour dfs;
+	std::map <int, Vertex> final;
 
 public:
     struct DfsCallback
@@ -42,10 +43,10 @@ public:
 	void Print_Graph ();
 	void BFS (Vertex Root);
 	template <typename Cb>
-	/*std::vector <Graph>*/ void DFS (Cb &cb);
+	std::vector <std::vector <Vertex> > DFS (Cb &cb);
     template <typename Cb>
-	/*Graph*/ void DFSVisit (Vertex U, Cb &cb);
+	void DFSVisit (Vertex U, Cb &cb, std::vector <Vertex> &Tree, std::vector <std::vector <Vertex> > &Forest);
     void Top_sort (Vertex X);
 	Graph Transp ();
-	/*std::vector <Graph>*/ void CCK ();
+	std::vector <std::vector <Vertex> > CCK ();
 };
