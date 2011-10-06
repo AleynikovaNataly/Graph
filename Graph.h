@@ -7,16 +7,30 @@
 struct DfS
 {
 	char colour;
-	int d;
 	int f;
 };
 
 typedef std::string Vertex;
 typedef int Weight;
+
+struct P_R
+{
+	Vertex Parent;
+	int Rank;
+};
+
 typedef std::map <Vertex, Weight> Adjlist;
 typedef std::map <Vertex, DfS> DColour;
 typedef std::map <Vertex, char> BColour;
 typedef std::map <Vertex, Adjlist> My_graph;
+typedef std::map <Vertex, P_R> Host_Kruskal;
+typedef std::vector <Host_Kruskal> Forest_Kruskal;
+
+struct Edge
+{
+	Vertex Begin;
+	Vertex End;
+};
 
 class Graph
 {
@@ -25,6 +39,8 @@ private:
 	BColour bfs;
 	DColour dfs;
 	std::map <int, Vertex> final;
+	std::map <Weight, Edge> edges;
+	Forest_Kruskal new_forest_kruskal;
 
 public:
     struct DfsCallback
@@ -49,4 +65,9 @@ public:
     void Top_sort (Vertex X);
 	Graph Transp ();
 	std::vector <std::vector <Vertex> > CCK ();
+	Host_Kruskal Make_Set (Vertex V);
+	Vertex Find_Set (Vertex X);
+	void Link (Vertex U, Vertex V);
+	void Union (Vertex U, Vertex V);
+	std::vector <Edge> MST_Kruskal ();
 };

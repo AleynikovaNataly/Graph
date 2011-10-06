@@ -2,7 +2,7 @@
 
 int main ()
 {
-	std::string root, name_1, name_2, name_find, name_del, name_del_1, name_del_2, name_sort;
+	std::string root, name_1, name_2, name_find, name_del, name_del_1, name_del_2, name_sort, name_kruskal;
 	int weight;
 	std::string Command;
 	int N = 0;
@@ -78,7 +78,17 @@ int main ()
 				std::cout << std::endl;
 			}
 		}
-		if (Command == "exit")
+		if (Command == "Kruskal")
+		{
+			std::vector <Edge> rez;
+			rez = New.MST_Kruskal ();
+			for (std::vector <Edge>::iterator it = rez.begin (); it != rez.end (); it++)
+			{
+				std::cout << (*it).Begin << (*it).End << "  ";
+			}
+			std::cout << std::endl;
+		}
+		if(Command == "exit")
 		{
 			N = 100;
 		}

@@ -12,7 +12,6 @@ void Graph::EddVertex (Vertex X)
 		bfs.insert (std::make_pair (X, 'w'));
 		DfS dFs;
 		dFs.colour = 'w';
-		dFs.d = 0;
 		dFs.f = 0;
 		dfs.insert (std::make_pair (X, dFs));
 	}
@@ -22,28 +21,30 @@ void Graph::EddEdge (Vertex A, Vertex B, Weight x)
 {
 	My_graph::iterator fnd_1 = graph.find (A);
 	My_graph::iterator fnd_2 = graph.find (B);
+	Edge edge; //по хорошему надо сделать так, чтобы одинаковые ребра не добавлялись несколько раз, но это можно реализовать легко при необходимости
+	edge.Begin = A;
+	edge.End = B;
+	edges.insert (std::make_pair (x, edge));
 	if (fnd_1 == graph.end ())
 	{
 		Adjlist a;
 		a.insert (std::make_pair (B, x));
 		graph.insert (std::make_pair (A, a));
 		bfs.insert (std::make_pair (A, 'w'));
-			bfs.insert (std::make_pair (B, 'w'));
+		bfs.insert (std::make_pair (B, 'w'));
 		DfS dFs;
 		dFs.colour = 'w';
-		dFs.d = 0;
 		dFs.f = 0;
 		dfs.insert (std::make_pair (A, dFs));
-			dfs.insert (std::make_pair (B, dFs));
+		dfs.insert (std::make_pair (B, dFs));
 	} else 
 	{
 		(*fnd_1).second.insert (std::make_pair (B, x));
-			bfs.insert (std::make_pair (B, 'w'));
-			DfS dFs;
-			dFs.colour = 'w';
-			dFs.d = 0;
-			dFs.f = 0;
-			dfs.insert (std::make_pair (B, dFs));
+		bfs.insert (std::make_pair (B, 'w'));
+		DfS dFs;
+		dFs.colour = 'w';
+		dFs.f = 0;
+		dfs.insert (std::make_pair (B, dFs));
 	}
 	/*if (fnd_2 == graph.end ())
 	{
@@ -53,12 +54,16 @@ void Graph::EddEdge (Vertex A, Vertex B, Weight x)
 		bfs.insert (std::make_pair (B, 'w'));
 		DfS dFs;
 		dFs.colour = 'w';
-		dFs.d = 0;
 		dFs.f = 0;
 		dfs.insert (std::make_pair (B, dFs));
 	} else
 	{
 		(*fnd_2).second.insert (std::make_pair (A, x));
+		bfs.insert (std::make_pair (A, 'w'));
+		DfS dFs;
+		dFs.colour = 'w';
+		dFs.f = 0;
+		dfs.insert (std::make_pair (A, dFs));
 	}*/
 }
 
@@ -249,13 +254,13 @@ std::vector <std::vector <Vertex> > Graph::DFS (Cb &cb)
 			}
 		}
 	}
-	//std::cout << std::endl;
 	return forest;
 }
 
 template <typename Cb>
 void Graph::DFSVisit (Vertex U, Cb &cb, std::vector <Vertex> &Tree, std::vector <std::vector <Vertex> > &Forest)
 {
+	int flag = 0;
 	DColour::iterator it = dfs.find (U);
 	DColour::iterator t;
 	My_graph::iterator fnd = graph.find (U);
@@ -264,7 +269,6 @@ void Graph::DFSVisit (Vertex U, Cb &cb, std::vector <Vertex> &Tree, std::vector 
 	{
 		My_graph::iterator list = GetList ((*fnd).first);
 		(*it).second.colour = 'g';
-		(*it).second.d++;
 		if (list != graph.end ())
 		{
 			for (Adjlist::iterator p = (*list).second.begin (); p != (*list).second.end (); p++)
@@ -275,23 +279,54 @@ void Graph::DFSVisit (Vertex U, Cb &cb, std::vector <Vertex> &Tree, std::vector 
 				{
 					DFSVisit ((*t).first, cb, Tree, Forest);
 				} else {
-					if (Tree.size () != 0)
+					/*My_graph::iterator bl = graph.find ((*p).first);
+					if (bl == graph.end ())
 					{
-						Forest.push_back (Tree);
-						Tree.clear ();
+						if (Tree.size () != 0)
+						{
+							Forest.push_back (Tree);
+							Tree.clear ();
+						}
 					}
+					for (Adjlist::iterator yes = (*bl).second.begin (); yes != (*bl).second.end (); yes++)
+					{
+						Vertex Y = (*yes).first;
+						DColour::iterator du = dfs.find (Y);
+						if ((*du).second.colour == 'w')
+						{
+							flag = 1;
+						}
+					}
+					if (flag == 0)
+					{*/
+						if (Tree.size () != 0)
+						{
+							Forest.push_back (Tree);
+							Tree.clear ();
+						}
+					/*} else {
+						flag = 0;
+					}*/
 				}
 			}
-		} /*else {
+		} else {
 			if (Tree.size () != 0)
 			{
 				Forest.push_back (Tree);
 				Tree.clear ();
 			}
-		}*/
+		}
 	}
 	(*it).second.colour = 'b';
-	(*it).second.f++;
+	if (final.size () != 0)
+	{
+		std::map <int, Vertex>::reverse_iterator rev = final.rbegin ();
+		int fin = (*rev).first;
+		fin++;
+		(*it).second.f = fin;
+	} else {
+		(*it).second.f = 1;
+	}
 	final.insert (std::make_pair ((*it).second.f, (*it).first));
 	cb.OnBlack ((*it).first);
 }
@@ -326,4 +361,93 @@ std::vector <std::vector <Vertex> > Graph::CCK ()
 	Graph::DfsCallback cb_t;
 	forest = tr.DFS (cb_t);
 	return forest;
+}
+
+Host_Kruskal Graph::Make_Set (Vertex V)
+{
+	Host_Kruskal new_host;
+	P_R p_r;
+	p_r.Parent = V;
+	p_r.Rank = 0;
+	new_host.insert (std::make_pair (V, p_r));
+	return new_host;
+}
+
+Vertex Graph::Find_Set (Vertex X)
+{
+	Host_Kruskal::iterator fnd;
+	for (Forest_Kruskal::iterator it = new_forest_kruskal.begin (); it != new_forest_kruskal.end (); it++)
+	{
+		fnd = (*it).find (X);
+		if (fnd != (*it).end ())
+		{
+			if ((*fnd).first != (*fnd).second.Parent)
+			{
+				Find_Set ((*fnd).second.Parent);
+			} else {
+				return ((*fnd).second.Parent);
+			}
+		}
+	}
+}
+
+void Graph::Link (Vertex U, Vertex V)
+{
+	Host_Kruskal::iterator t_u, t_v;
+	int rank_u, rank_v;
+	Vertex parent_u, parent_v;
+	for (Forest_Kruskal::iterator it = new_forest_kruskal.begin (); it != new_forest_kruskal.end (); it++)
+	{
+		t_u = (*it).find (U);
+		if (t_u != (*it).end ())
+		{
+			rank_u = (*t_u).second.Rank;
+		}
+	}
+	for (Forest_Kruskal::iterator it = new_forest_kruskal.begin (); it != new_forest_kruskal.end (); it++)
+	{
+		t_v = (*it).find (V);
+		if (t_v != (*it).end ())
+		{
+			rank_v = (*t_v).second.Rank;
+		}
+	}
+	if (rank_u > rank_v)
+	{
+		(*t_v).second.Parent = U;
+	} else {
+		(*t_u).second.Parent = V;
+		if (rank_u == rank_v)	
+		{
+			(*t_v).second.Rank++;
+		}
+	}
+}
+
+void Graph::Union (Vertex U, Vertex V)
+{
+	Link (Find_Set (U), Find_Set (V));
+}
+
+std::vector <Edge> Graph::MST_Kruskal ()
+{
+	std::vector <Edge> Rez;
+	Forest_Kruskal new_forest_kruskal;
+	for (My_graph::iterator iter = graph.begin (); iter != graph.end (); iter++)
+	{
+		Host_Kruskal new_host_kruskal = Make_Set ((*iter).first);
+		new_forest_kruskal.push_back (new_host_kruskal);
+	}
+	for (std::map <Weight, Edge>::iterator p = edges.begin (); p != edges.end (); p++)
+	{
+		if (Find_Set ((*p).second.Begin) != Find_Set ((*p).second.End))
+		{
+			Edge edge;
+			edge.Begin = (*p).second.Begin;
+			edge.End = (*p).second.End;
+			Rez.push_back (edge);
+			Union ((*p).second.Begin, (*p).second.End);
+		}
+	}
+	return Rez;
 }
