@@ -40,7 +40,6 @@ private:
 	DColour dfs;
 	std::map <int, Vertex> final;
 	std::map <Weight, Edge> edges;
-	Forest_Kruskal new_forest_kruskal;
 
 public:
     struct DfsCallback
@@ -66,8 +65,8 @@ public:
 	Graph Transp ();
 	std::vector <std::vector <Vertex> > CCK ();
 	Host_Kruskal Make_Set (Vertex V);
-	Vertex Find_Set (Vertex X);
-	void Link (Vertex U, Vertex V);
-	void Union (Vertex U, Vertex V);
+	Vertex Find_Set (Vertex X, Forest_Kruskal &New_Forest_Kruskal);
+	void Link (Vertex U, Vertex V, Forest_Kruskal &New_Forest_Kruskal);
+	void Union (Vertex U, Vertex V, Forest_Kruskal &New_Forest_Kruskal);
 	std::vector <Edge> MST_Kruskal ();
 };

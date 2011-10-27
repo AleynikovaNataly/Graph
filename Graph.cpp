@@ -373,80 +373,87 @@ Host_Kruskal Graph::Make_Set (Vertex V)
 	return new_host;
 }
 
-Vertex Graph::Find_Set (Vertex X)
+Vertex Graph::Find_Set (Vertex X, Forest_Kruskal &New_Forest_Kruskal)
 {
 	Host_Kruskal::iterator fnd;
-	for (Forest_Kruskal::iterator it = new_forest_kruskal.begin (); it != new_forest_kruskal.end (); it++)
+	Host_Kruskal::iterator mur;
+	for (Forest_Kruskal::iterator it = New_Forest_Kruskal.begin (); it != New_Forest_Kruskal.end (); it++)
 	{
 		fnd = (*it).find (X);
 		if (fnd != (*it).end ())
 		{
-			if ((*fnd).first != (*fnd).second.Parent)
-			{
-				Find_Set ((*fnd).second.Parent);
-			} else {
-				return ((*fnd).second.Parent);
-			}
+			mur = fnd;
 		}
 	}
+	if ((*mur).first != (*mur).second.Parent)
+	{					
+		Find_Set ((*mur).second.Parent, New_Forest_Kruskal);
+	} else {
+		return ((*mur).second.Parent);
+	}
 }
+	
 
-void Graph::Link (Vertex U, Vertex V)
+void Graph::Link (Vertex U, Vertex V, Forest_Kruskal &New_Forest_Kruskal)
 {
-	Host_Kruskal::iterator t_u, t_v;
+	Host_Kruskal::iterator t_u, t_v, p_u, p_v;
 	int rank_u, rank_v;
 	Vertex parent_u, parent_v;
-	for (Forest_Kruskal::iterator it = new_forest_kruskal.begin (); it != new_forest_kruskal.end (); it++)
+	for (Forest_Kruskal::iterator it = New_Forest_Kruskal.begin (); it != New_Forest_Kruskal.end (); it++)
 	{
 		t_u = (*it).find (U);
 		if (t_u != (*it).end ())
 		{
+			p_u = t_u;
 			rank_u = (*t_u).second.Rank;
 		}
 	}
-	for (Forest_Kruskal::iterator it = new_forest_kruskal.begin (); it != new_forest_kruskal.end (); it++)
+	for (Forest_Kruskal::iterator it = New_Forest_Kruskal.begin (); it != New_Forest_Kruskal.end (); it++)
 	{
 		t_v = (*it).find (V);
 		if (t_v != (*it).end ())
 		{
+			p_v = t_v;
 			rank_v = (*t_v).second.Rank;
 		}
 	}
 	if (rank_u > rank_v)
 	{
-		(*t_v).second.Parent = U;
+		(*p_v).second.Parent = U;
 	} else {
-		(*t_u).second.Parent = V;
+		(*p_u).second.Parent = V; //!!! iterator defer
 		if (rank_u == rank_v)	
 		{
-			(*t_v).second.Rank++;
+			(*p_v).second.Rank++;
 		}
 	}
 }
 
-void Graph::Union (Vertex U, Vertex V)
+void Graph::Union (Vertex U, Vertex V, Forest_Kruskal &New_Forest_Kruskal)
 {
-	Link (Find_Set (U), Find_Set (V));
+	Link (Find_Set (U, New_Forest_Kruskal), Find_Set (V, New_Forest_Kruskal), New_Forest_Kruskal);
 }
 
 std::vector <Edge> Graph::MST_Kruskal ()
 {
 	std::vector <Edge> Rez;
 	Forest_Kruskal new_forest_kruskal;
-	for (My_graph::iterator iter = graph.begin (); iter != graph.end (); iter++)
+	for (BColour::iterator iter = bfs.begin (); iter != bfs.end (); iter++)
 	{
 		Host_Kruskal new_host_kruskal = Make_Set ((*iter).first);
 		new_forest_kruskal.push_back (new_host_kruskal);
 	}
 	for (std::map <Weight, Edge>::iterator p = edges.begin (); p != edges.end (); p++)
 	{
-		if (Find_Set ((*p).second.Begin) != Find_Set ((*p).second.End))
+		Vertex One = Find_Set ((*p).second.Begin, new_forest_kruskal);
+		Vertex Two = Find_Set ((*p).second.End, new_forest_kruskal);
+		if (One != Two)
 		{
 			Edge edge;
 			edge.Begin = (*p).second.Begin;
 			edge.End = (*p).second.End;
 			Rez.push_back (edge);
-			Union ((*p).second.Begin, (*p).second.End);
+			Union ((*p).second.Begin, (*p).second.End, new_forest_kruskal);
 		}
 	}
 	return Rez;
