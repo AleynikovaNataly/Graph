@@ -87,6 +87,11 @@ int main ()
 				std::cout << (*it).Begin << (*it).End << "  ";
 			}
 			std::cout << std::endl;
+			for (std::vector <Edge>::iterator it = rez.begin (); it != rez.end (); it++)
+			{
+				std::cout << (*it).Begin << (*it).End << "  " << std::endl;
+			}
+			std::cout << std::endl;
 		}
 		if(Command == "exit")
 		{
