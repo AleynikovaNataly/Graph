@@ -392,8 +392,6 @@ Vertex Graph::Find_Set (Vertex X, Forest_Kruskal &New_Forest_Kruskal)
 		return ((*mur).second.Parent);
 	}
 }
-	
-
 void Graph::Link (Vertex U, Vertex V, Forest_Kruskal &New_Forest_Kruskal)
 {
 	Host_Kruskal::iterator t_u, t_v, p_u, p_v;
@@ -443,7 +441,7 @@ std::vector <Edge> Graph::MST_Kruskal ()
 		Host_Kruskal new_host_kruskal = Make_Set ((*iter).first);
 		new_forest_kruskal.push_back (new_host_kruskal);
 	}
-	for (std::map <Weight, Edge>::iterator p = edges.begin (); p != edges.end (); p++)
+	for (std::multimap <Weight, Edge>::iterator p = edges.begin (); p != edges.end (); p++)
 	{
 		Vertex One = Find_Set ((*p).second.Begin, new_forest_kruskal);
 		Vertex Two = Find_Set ((*p).second.End, new_forest_kruskal);
@@ -458,3 +456,99 @@ std::vector <Edge> Graph::MST_Kruskal ()
 	}
 	return Rez;
 }
+
+std::map <std::string, std::string> Graph::Dejkstra (Vertex W)
+{
+	std::multimap <int, std::string> distance;
+	std::map <std::string, int> tdistance;
+	std::map <std::string, std::string> parent;
+	My_graph::iterator it;
+	std::map <std::string, int>::iterator f, t;
+	std::multimap <int, std::string>::iterator iter;
+	std::map <std::string, std::string>::iterator q;
+	Vertex U, V;
+	int Dv, Du;
+	distance.insert (std::make_pair (0, W));
+	tdistance.insert (std::make_pair (W, 0));
+	parent.insert (std::make_pair (W, "NIL"));
+	while (distance.empty () == false)
+	{
+		iter = distance.begin ();
+		U = (*iter).second;
+		Du = (*iter).first;
+		distance.erase (iter);
+		it = graph.find (U);
+		if (it != graph.end ())
+		{
+			for (Adjlist::iterator p = (*it).second.begin (); p != (*it).second.end (); p++)
+			{
+				V = (*p).first;
+				t = tdistance.find (V);
+				if (t != tdistance.end ())
+				{
+					Dv = (*t).second;
+				} else {
+					Dv = 1000000;
+				}
+				if (Dv > Du + (*p).second)
+				{
+					distance.insert (std::make_pair ((Du + (*p).second), V));
+					f = tdistance.find (V);
+					if (f != tdistance.end ())
+					{
+						tdistance.erase (f);
+					}
+					tdistance.insert (std::make_pair (V, (Du + (*p).second)));
+					q = parent.find (V);
+					if (q != parent.end ())
+					{
+						parent.erase (q);
+					}
+					parent.insert (std::make_pair (V, U));
+				}
+			}
+		}
+	}
+	return parent;
+}
+
+/*{
+	std::set <std::string> used;
+	std::map <std::string, std::string> parent;
+
+	distance[v0] = 0;
+	while (true)
+	{
+		std::string vm = "";
+		int dmin = -1;
+		for (TDistance::iterator it = distance.begin (); it != distance.end (); it++)
+		{
+			if (! used.count((*it).first) < dmin)
+			{
+				if (dmin == -1 || (*it).second < dmin)
+				{
+					dmin = (*it).second;
+					vm = (*it).first;
+				}
+			}
+		}
+		if (vm == "")
+		{
+			break;
+		}
+		My_graph::iterator fnd = graph.find (vm);
+		Adjlist neighbors = (*fnd).second;
+		for (Adjlist::iterator it = neighbors.begin (); it != neighbors.end (); it++)
+		{
+			std::map <std::string, int>::iterator jt = distance.find ((*it).first);
+			if (jt == distance.end () || (*jt).second > dmin + (*it).second)
+			{
+				distance[(*it).first] = dmin + (*it).second;
+				parent[(*it).first] = vm;
+			}
+		}
+		used.insert (vm);
+	}
+
+	return used;
+}*/

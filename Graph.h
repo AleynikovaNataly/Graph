@@ -3,6 +3,7 @@
 #include <map>
 #include <deque>
 #include <vector>
+#include <set>
 
 struct DfS
 {
@@ -39,7 +40,7 @@ private:
 	BColour bfs;
 	DColour dfs;
 	std::map <int, Vertex> final;
-	std::map <Weight, Edge> edges;
+	std::multimap <Weight, Edge> edges;
 
 public:
     struct DfsCallback
@@ -69,4 +70,5 @@ public:
 	void Link (Vertex U, Vertex V, Forest_Kruskal &New_Forest_Kruskal);
 	void Union (Vertex U, Vertex V, Forest_Kruskal &New_Forest_Kruskal);
 	std::vector <Edge> MST_Kruskal ();
+	std::map <std::string, std::string> Dejkstra (Vertex V);
 };

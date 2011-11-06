@@ -2,7 +2,7 @@
 
 int main ()
 {
-	std::string root, name_1, name_2, name_find, name_del, name_del_1, name_del_2, name_sort, name_kruskal;
+	std::string root, name_1, name_2, name_find, name_del, name_del_1, name_del_2, name_sort, name_kruskal, name_dejkstra;
 	int weight;
 	std::string Command;
 	int N = 0;
@@ -92,6 +92,16 @@ int main ()
 				std::cout << (*it).Begin << (*it).End << "  " << std::endl;
 			}
 			std::cout << std::endl;
+		}
+		if (Command == "Dejkstra")
+		{
+			std::map <std::string, std::string> dejkstr;
+			std::cin >> name_dejkstra;
+			dejkstr = New.Dejkstra (name_dejkstra);
+			for (std::map <std::string, std::string>::iterator it = dejkstr.begin (); it != dejkstr.end (); it++)
+			{
+				std::cout << (*it).first << " " << (*it).second << std::endl;
+			}
 		}
 		if(Command == "exit")
 		{
